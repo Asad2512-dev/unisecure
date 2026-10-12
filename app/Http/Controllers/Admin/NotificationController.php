@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\DeliverNotificationJob;
 use App\Models\{AuditLog, NotificationDelivery};
+use App\Services\NotificationRetryService;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 
@@ -30,13 +30,10 @@ class NotificationController extends Controller
         return view('admin.notifications.show', compact('record','deliveries')+['title'=>'Notification detail']);
     }
 
-    public function retry(Request $request, NotificationDelivery $delivery)
+    public function retry(Request $request, NotificationDelivery $delivery, NotificationRetryService $retries)
     {
         $this->authorizeAdmin();
-        abort_unless(in_array($delivery->status,['failed'],true) && in_array($delivery->error_category,['provider_unavailable','transient'],true) && $delivery->attempts < (int)config('fcm.max_attempts',3), 409, 'This delivery is not eligible for retry.');
-        $delivery->update(['status'=>'queued','error_category'=>null]);
-        DeliverNotificationJob::dispatch($delivery->notification_id)->afterCommit();
-        AuditLog::create(['user_id'=>auth()->id(),'action'=>'notification_delivery_retry_queued','entity_type'=>NotificationDelivery::class,'entity_id'=>$delivery->id,'new_values'=>['attempts'=>$delivery->attempts],'ip_address'=>$request->ip(),'user_agent'=>$request->userAgent()]);
+        $retries->retry($delivery,auth()->user(),$request);
         return back()->with('status','Retry queued. Provider acceptance will be tracked separately.');
     }
 }
