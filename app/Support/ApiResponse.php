@@ -1,0 +1,3 @@
+<?php
+namespace App\Support;
+class ApiResponse { public static function ok(mixed $data=[],string $message='Operation completed successfully.',array $meta=[]){return response()->json(['success'=>true,'message'=>$message,'data'=>$data,'meta'=>$meta]);} public static function created(mixed $data=[],string $message='Resource created successfully.'){return response()->json(['success'=>true,'message'=>$message,'data'=>$data,'meta'=>[]],201);} public static function error(string $message,array $errors=[],int $status=400){return response()->json(['success'=>false,'message'=>$message,'errors'=>$errors],$status);} }

@@ -1,0 +1,14 @@
+{
+  "info": {"name":"UniSecure API v1","schema":"https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},
+  "variable":[{"key":"base_url","value":"http://localhost:8000"},{"key":"access_token","value":""},{"key":"request_id","value":"phase7-client-request"}],
+  "item":[
+    {"name":"Health","request":{"method":"GET","header":[{"key":"X-Request-ID","value":"{{request_id}}"}],"url":"{{base_url}}/api/v1/health"}},
+    {"name":"Login","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"email\":\"student@example.test\",\"password\":\"replace-with-local-secret\"}"},"url":"{{base_url}}/api/v1/auth/login"}},
+    {"name":"Current user","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{access_token}}"}],"url":"{{base_url}}/api/v1/me"}},
+    {"name":"Student profile","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{access_token}}"}],"url":"{{base_url}}/api/v1/student/profile"}},
+    {"name":"Teacher sessions","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{access_token}}"}],"url":"{{base_url}}/api/v1/teacher/sessions"}},
+    {"name":"Guard face unavailable","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{access_token}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"capture\":\"provider-capture-placeholder\"}"},"url":"{{base_url}}/api/v1/guard/security/face"}},
+    {"name":"Guard manual verification","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{access_token}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"student_id\":1,\"confirmed\":true,\"reason\":\"Face provider unavailable; institutional identity check completed\"}"},"url":"{{base_url}}/api/v1/guard/security/manual"}},
+    {"name":"Guard visitors","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{access_token}}"}],"url":"{{base_url}}/api/v1/guard/visitors"}}
+  ]
+}
