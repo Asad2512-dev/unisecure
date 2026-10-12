@@ -38,6 +38,13 @@ class PhaseEightNotificationTest extends TestCase
         $this->actingAs($other,'sanctum')->postJson('/api/v1/notifications/'.$id.'/read')->assertNotFound();
     }
 
+    public function test_student_notification_endpoint_uses_safe_serialization(): void
+    {
+        $owner=$this->user(); $id=(string)Str::uuid();
+        DB::table('notifications')->insert(['id'=>$id,'type'=>'test','notifiable_type'=>User::class,'notifiable_id'=>$owner->id,'data'=>json_encode(['title'=>'Safe','provider_payload'=>'secret','device_token'=>'secret']),'created_at'=>now(),'updated_at'=>now()]);
+        $this->actingAs($owner,'sanctum')->getJson('/api/v1/student/notifications')->assertOk()->assertJsonPath('data.items.0.data.title','Safe')->assertJsonMissingPath('data.items.0.data.provider_payload')->assertJsonMissingPath('data.items.0.data.device_token');
+    }
+
     public function test_admin_retry_is_authorized_audited_bounded_and_permanent_failures_rejected(): void
     {
         $admin=$this->user('admin'); $id=(string)Str::uuid();
