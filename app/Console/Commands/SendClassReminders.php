@@ -12,7 +12,7 @@ class SendClassReminders extends Command
     protected $description = 'Queue reminders for upcoming non-cancelled class sessions';
     public function handle(NotificationService $notifications): int
     {
-        $lead=(int)\App\Models\SystemSetting::getValue('class_reminder_lead_minutes',15);
+        $lead=(int)\App\Models\SystemSetting::getValue('class_reminder_lead_minutes', \App\Models\SystemSetting::getValue('class_reminder_minutes',15));
         $now=now(); $until=$now->copy()->addMinutes(max(1,$lead));
         ClassSession::with('course')->whereIn('status',['scheduled','open'])->whereBetween('scheduled_start_at',[$now,$until])->each(function($session) use($notifications){
             CourseEnrollment::with('student.user')->where('course_id',$session->course_id)->where('section_id',$session->section_id)->whereIn('status',['active','completed'])->each(function($enrollment) use($session,$notifications){

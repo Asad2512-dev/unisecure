@@ -10,5 +10,5 @@ class CsvExport
         return response()->streamDownload(function () use ($headers, $rows): void { $out=fopen('php://output','w'); fputcsv($out,$headers); foreach($rows as $row) fputcsv($out,array_map([self::class,'cell'],(array)$row)); fclose($out); }, $filename, ['Content-Type'=>'text/csv; charset=UTF-8']);
     }
     public static function cell(mixed $value): string
-    { $value=(string)($value ?? ''); return $value !== '' && in_array($value[0],['=','+','-','@'],true) ? "'".$value : $value; }
+    { $value=(string)($value ?? ''); return preg_match('/^[\x00-\x20]*[=+\-@]/', $value) ? "'".$value : $value; }
 }
