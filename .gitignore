@@ -15,6 +15,15 @@
 /auth.json
 /node_modules
 /public/build
+unisecure_app/.dart_tool/
+unisecure_app/build/
+unisecure_app/.packages
+unisecure_app/.flutter-plugins
+unisecure_app/.flutter-plugins-dependencies
+unisecure_app/.flutter_tool_state
+unisecure_app/**/*.keystore
+unisecure_app/**/*.jks
+unisecure_app/**/*.p12
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage
