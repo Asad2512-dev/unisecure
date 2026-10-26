@@ -6,10 +6,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const UniSecureApp());
-    expect(find.text('Sign in to UniSecure'), findsOneWidget);
-    expect(
-      find.text('Secure access for your university role.'),
-      findsOneWidget,
-    );
+    await tester.pump();
+    expect(find.text('Uni Secure'), findsOneWidget);
   });
 }

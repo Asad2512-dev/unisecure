@@ -1,9 +1,73 @@
 @import 'tailwindcss';
 
+.attendance-choice { display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-height: 2.5rem; padding: .6rem .9rem; border: 1px solid currentColor; border-radius: .75rem; font-size: .75rem; font-weight: 700; transition: box-shadow .15s, background-color .15s; }
+.attendance-present { color: #087b71; background: #e8f7f5; }
+.attendance-absent { color: #be123c; background: #fff1f2; }
+.attendance-late { color: #92400e; background: #fffbeb; }
+.attendance-choice[aria-pressed="true"] { outline: 2px solid currentColor; outline-offset: 2px; }
+.attendance-choice:hover:not(:disabled), .attendance-choice:focus-visible { box-shadow: 0 0 0 3px #10233f15; }
+.attendance-choice:disabled { cursor: not-allowed; opacity: .55; }
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-brand-navy: #10233f;
+    --color-brand-teal: #0f9d91;
+    --color-brand-surface: #f3f6fa;
+    --color-indigo-50: #e8f7f5;
+    --color-indigo-100: #d1efec;
+    --color-indigo-200: #a6dfda;
+    --color-indigo-300: #70c9c1;
+    --color-indigo-500: #0f9d91;
+    --color-indigo-600: #0f9d91;
+    --color-indigo-700: #0b7f76;
+    --color-indigo-800: #08645e;
+    --color-indigo-950: #10233f;
+    --color-slate-950: #10233f;
+}
+
+@keyframes loader-bounce { 0%, 80%, 100% { transform: scale(.65); opacity: .45; } 40% { transform: scale(1); opacity: 1; } }
+.loader-dot { width: .45rem; height: .45rem; border-radius: 9999px; background: #0f9d91; animation: loader-bounce 1s infinite ease-in-out; }
+
+.form-field { width: 100%; border: 1px solid #d9e2ec; border-radius: .9rem; background: rgba(255,255,255,.78); padding: .8rem 1rem; font-size: .875rem; color: #10233f; box-shadow: 0 1px 2px rgba(16,35,63,.03); outline: none; transition: border-color .2s, box-shadow .2s, background-color .2s; }
+.form-field::placeholder { color: #9aaabd; }
+.form-field:focus { border-color: #0f9d91; background: white; box-shadow: 0 0 0 4px rgba(15,157,145,.12); }
+
+.sidebar-toggle { margin-left: auto; height: 2rem; width: 2rem; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,.12); border-radius: .7rem; color: #b8c7da; transition: background-color .2s, color .2s; }
+.sidebar-toggle:hover { background: rgba(255,255,255,.1); color: white; }
+aside { max-height: 100dvh; overflow-y: auto; overflow-x: hidden; overscroll-behavior-y: contain; scrollbar-width: thin; scrollbar-color: #41536a transparent; }
+aside::-webkit-scrollbar { width: 5px; }
+aside::-webkit-scrollbar-thumb { background: #41536a; border-radius: 999px; }
+.navigation-icon { display: inline-flex; flex: 0 0 1.25rem; align-items: center; justify-content: center; }
+.navigation-icon svg { width: 1rem; height: 1rem; }
+aside nav a[aria-current="page"] { background: var(--color-brand-teal); color: white; font-weight: 700; box-shadow: inset 3px 0 0 #70c9c1, 0 4px 12px rgba(15,157,145,.18); }
+aside nav a[aria-current="page"] span { color: white; }
+body.sidebar-collapsed aside { width: 5.5rem; }
+body.sidebar-collapsed main { margin-left: 5.5rem; }
+body.sidebar-collapsed aside .flex.items-center.gap-3.px-3 > div:nth-child(2),
+body.sidebar-collapsed aside .sidebar-section-label { display: none; }
+body.sidebar-collapsed aside nav a { justify-content: center; gap: 0; font-size: 0; }
+body.sidebar-collapsed aside nav a span { font-size: 1rem; }
+body.sidebar-collapsed aside .sidebar-toggle { margin-left: 0; }
+.sidebar-logo-control { flex-shrink: 0; border-radius: .75rem; }
+.sidebar-logo-control > div { flex-shrink: 0; }
+.sidebar-logo-control:focus-visible { outline: 2px solid var(--color-brand-teal); outline-offset: 4px; }
+body.sidebar-collapsed aside .sidebar-brand { justify-content: center; padding-inline: 0; gap: 0; }
+body.sidebar-collapsed aside .sidebar-toggle { display: none; }
+body.sidebar-collapsed .sidebar-logo-control { cursor: pointer; }
+@media (max-width: 767px) { body.sidebar-collapsed main { margin-left: 0; } }
+
+/* Tables remain readable inside the viewport on every screen size. */
+table { width: 100%; max-width: 100%; table-layout: fixed; }
+th, td { min-width: 0; max-width: 100%; overflow-wrap: anywhere; word-break: break-word; }
+th { overflow-wrap: break-word; word-break: normal; hyphens: none; white-space: normal; text-wrap: wrap; line-height: 1.25; position: relative; z-index: 1; }
+table:has(tbody td[colspan]) thead { display: none; }
+table:has(tbody td[colspan]) { table-layout: auto; }
+.overflow-x-auto { overflow-x: visible !important; }
+@media (max-width: 767px) {
+    table { font-size: .75rem; }
+    th, td { padding-left: .65rem !important; padding-right: .65rem !important; }
 }

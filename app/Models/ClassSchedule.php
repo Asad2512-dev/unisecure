@@ -1,4 +1,47 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
-class ClassSchedule extends Model { protected $fillable=['course_id','teacher_id','section_id','room_id','day_of_week','start_time','end_time','grace_period_minutes','status','academic_year','semester_id','effective_start_date','effective_end_date']; protected $casts=['effective_start_date'=>'date','effective_end_date'=>'date']; public function course(){return $this->belongsTo(Course::class);} public function teacher(){return $this->belongsTo(Teacher::class);} public function section(){return $this->belongsTo(Section::class);} public function room(){return $this->belongsTo(Room::class);} public function semester(){return $this->belongsTo(Semester::class);} public function sessions(){return $this->hasMany(ClassSession::class,'schedule_id');} public function scopeActive($query){return $query->where('status','active');} }
+
+class ClassSchedule extends Model
+{
+    protected $fillable = ['course_id', 'teacher_id', 'section_id', 'room_id', 'day_of_week', 'start_time', 'end_time', 'grace_period_minutes', 'status', 'academic_year', 'semester_id', 'effective_start_date', 'effective_end_date'];
+
+    protected $casts = ['effective_start_date' => 'date', 'effective_end_date' => 'date'];
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
+    }
+
+    public function teacher()
+    {
+        return $this->belongsTo(Teacher::class);
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
+
+    public function room()
+    {
+        return $this->belongsTo(Room::class);
+    }
+
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class);
+    }
+
+    public function sessions()
+    {
+        return $this->hasMany(ClassSession::class, 'schedule_id');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+}

@@ -1,11 +1,11 @@
 {
-    "name": "unisecure_app",
-    "short_name": "unisecure_app",
+    "name": "Uni Secure",
+    "short_name": "Uni Secure",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F6F8FC",
+    "theme_color": "#3157D5",
+    "description": "NUML Campus Attendance & Security System",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

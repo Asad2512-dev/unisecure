@@ -1,0 +1,5 @@
+@extends(auth()->user()->isAdmin() ? 'layouts.admin' : 'layouts.portal')
+@section('content')
+@include('security.navigation')
+<div class="grid gap-6 md:grid-cols-2">@foreach(['Guard profile' => ['Name' => $guard->user?->name, 'Employee ID' => $guard->employee_id, 'Email' => $guard->user?->email, 'Phone' => $guard->phone, 'Status' => ucfirst($guard->status)], 'Assigned gate' => ['Gate name' => $guard->gate?->name, 'Gate code' => $guard->gate?->code, 'Location' => $guard->gate?->location, 'Status' => ucfirst($guard->gate?->status ?? '')]] as $heading=>$items)<section class="rounded-2xl border border-slate-200/70 bg-white p-7"><h2 class="text-lg font-bold">{{ $heading }}</h2><dl class="mt-6 divide-y divide-slate-100">@foreach($items as $label=>$value)<div class="flex flex-wrap justify-between gap-3 py-4"><dt class="text-sm text-slate-500">{{ $label }}</dt><dd class="break-all text-sm font-semibold">{{ $value ?: 'Not provided' }}</dd></div>@endforeach</dl></section>@endforeach</div><p class="mt-6 text-sm text-slate-500">Contact your administrator to update your profile or gate assignment.</p>
+@endsection

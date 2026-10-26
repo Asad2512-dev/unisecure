@@ -1,21 +1,88 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1;
+
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
 use App\Http\Resources\StudentResource;
-use App\Models\{ClassSession,CourseEnrollment,EntryExitLog,Student};
-use App\Models\SystemSetting;
+use App\Models\ClassSchedule;
+use App\Models\ClassSession;
+use App\Models\Student;
+use App\Services\AttendanceReportService;
+use App\Support\ApiResponse;
 use Illuminate\Http\Request;
+
 class StudentController extends Controller
 {
- private function student():Student{$student=auth()->user()->student;abort_unless($student&&$student->status==='active',403);return $student;}
- public function profile(){return ApiResponse::ok((new StudentResource($this->student()->load(['user','department','program','semester','section'])))->resolve());}
- public function academic(){return ApiResponse::ok((new StudentResource($this->student()->load(['department','program','semester','section'])))->resolve());}
- public function courses(Request $request){$student=$this->student();$records=$student->enrollments()->with(['course','section','semester'])->whereIn('status',['active','completed'])->paginate(min((int)$request->input('per_page',20),50));return ApiResponse::ok(['items'=>$records->getCollection()->map(fn($e)=>['id'=>$e->id,'status'=>$e->status,'academic_year'=>$e->academic_year,'course'=>['code'=>$e->course?->course_code,'name'=>$e->course?->name],'section'=>$e->section?->code,'semester'=>$e->semester?->name]),'pagination'=>['current_page'=>$records->currentPage(),'last_page'=>$records->lastPage(),'per_page'=>$records->perPage(),'total'=>$records->total()]]);}
- public function timetable(){ $student=$this->student();$items=\App\Models\ClassSchedule::with(['course','teacher.user','room'])->where('section_id',$student->section_id)->where('semester_id',$student->semester_id)->where('status','active')->orderBy('day_of_week')->orderBy('start_time')->get()->map(fn($s)=>['id'=>$s->id,'day_of_week'=>$s->day_of_week,'start_time'=>$s->start_time,'end_time'=>$s->end_time,'course'=>$s->course?->course_code,'teacher'=>$s->teacher?->user?->name,'room'=>$s->room?->name]);return ApiResponse::ok(['items'=>$items]);}
- public function sessions(Request $request){$student=$this->student();$q=ClassSession::with(['course','room'])->where('section_id',$student->section_id)->whereHas('course.enrollments',fn($x)=>$x->where('student_id',$student->id)->whereIn('status',['active','completed']))->where('status','!=','cancelled')->orderByDesc('session_date');$sessions=$q->paginate(min((int)$request->input('per_page',20),50));return ApiResponse::ok(['items'=>$sessions->getCollection()->map(fn($s)=>['id'=>$s->id,'date'=>$s->session_date?->toDateString(),'start_at'=>$s->scheduled_start_at?->toIso8601String(),'end_at'=>$s->scheduled_end_at?->toIso8601String(),'status'=>$s->status,'course'=>$s->course?->course_code,'room'=>$s->room?->name]),'pagination'=>['current_page'=>$sessions->currentPage(),'last_page'=>$sessions->lastPage(),'total'=>$sessions->total()]]);}
- public function attendance(Request $request){$student=$this->student();$records=$student->attendanceRecords()->with(['session.course'])->latest('marked_at')->paginate(min((int)$request->input('per_page',20),50));return ApiResponse::ok(['items'=>$records->getCollection()->map(fn($r)=>['id'=>$r->id,'status'=>$r->status,'marked_at'=>$r->marked_at?->toIso8601String(),'session_id'=>$r->class_session_id,'course'=>$r->session?->course?->course_code]),'pagination'=>['current_page'=>$records->currentPage(),'last_page'=>$records->lastPage(),'total'=>$records->total()]]);}
- public function attendanceSummary(\Illuminate\Http\Request $request, \App\Services\AttendanceReportService $reports){$student=$this->student();return ApiResponse::ok($reports->studentSummary($student,$request->input('from'),$request->input('to')));}
- public function security(){ $student=$this->student();$logs=$student->entryExitLogs()->with('gate')->latest('event_at')->paginate(20);return ApiResponse::ok(['items'=>$logs->getCollection()->map(fn($l)=>['id'=>$l->id,'action'=>$l->action,'verification_method'=>$l->verification_method,'event_at'=>$l->event_at?->toIso8601String(),'gate'=>$l->gate?->name]),'pagination'=>['current_page'=>$logs->currentPage(),'last_page'=>$logs->lastPage(),'total'=>$logs->total()]]);}
- public function notifications(Request $request){$items=auth()->user()->notifications()->latest()->paginate(min((int)$request->input('per_page',20),50));return ApiResponse::ok(['items'=>$items->getCollection()->map(fn($n)=>['id'=>$n->id,'type'=>$n->type,'data'=>array_intersect_key(is_array($n->data)?$n->data:[],array_flip(['title','body','message','event','session_id'])),'read_at'=>$n->read_at?->toIso8601String(),'created_at'=>$n->created_at?->toIso8601String()]),'pagination'=>['current_page'=>$items->currentPage(),'last_page'=>$items->lastPage(),'total'=>$items->total()]]);}
+    private function student(): Student
+    {
+        $student = auth()->user()->student;
+        abort_unless($student && $student->status === 'active', 403);
+
+        return $student;
+    }
+
+    public function profile()
+    {
+        return ApiResponse::ok((new StudentResource($this->student()->load(['user', 'department', 'program', 'semester', 'section'])))->resolve());
+    }
+
+    public function academic()
+    {
+        return ApiResponse::ok((new StudentResource($this->student()->load(['department', 'program', 'semester', 'section'])))->resolve());
+    }
+
+    public function courses(Request $request)
+    {
+        $student = $this->student();
+        $records = $student->enrollments()->with(['course', 'section', 'semester'])->whereIn('status', ['active', 'completed'])->paginate(min((int) $request->input('per_page', 20), 50));
+
+        return ApiResponse::ok(['items' => $records->getCollection()->map(fn ($e) => ['id' => $e->id, 'status' => $e->status, 'academic_year' => $e->academic_year, 'course' => ['code' => $e->course?->course_code, 'name' => $e->course?->name], 'section' => $e->section?->code, 'semester' => $e->semester?->name]), 'pagination' => ['current_page' => $records->currentPage(), 'last_page' => $records->lastPage(), 'per_page' => $records->perPage(), 'total' => $records->total()]]);
+    }
+
+    public function timetable()
+    {
+        $student = $this->student();
+        $items = ClassSchedule::with(['course', 'teacher.user', 'room'])->where('section_id', $student->section_id)->where('semester_id', $student->semester_id)->where('status', 'active')->orderBy('day_of_week')->orderBy('start_time')->get()->map(fn ($s) => ['id' => $s->id, 'day_of_week' => $s->day_of_week, 'start_time' => $s->start_time, 'end_time' => $s->end_time, 'course' => $s->course?->course_code, 'teacher' => $s->teacher?->user?->name, 'room' => $s->room?->name]);
+
+        return ApiResponse::ok(['items' => $items]);
+    }
+
+    public function sessions(Request $request)
+    {
+        $student = $this->student();
+        $q = ClassSession::with(['course', 'room'])->where('section_id', $student->section_id)->whereHas('course.enrollments', fn ($x) => $x->where('student_id', $student->id)->whereIn('status', ['active', 'completed']))->where('status', '!=', 'cancelled')->orderByDesc('session_date');
+        $sessions = $q->paginate(min((int) $request->input('per_page', 20), 50));
+
+        return ApiResponse::ok(['items' => $sessions->getCollection()->map(fn ($s) => ['id' => $s->id, 'date' => $s->session_date?->toDateString(), 'start_at' => $s->scheduled_start_at?->toIso8601String(), 'end_at' => $s->scheduled_end_at?->toIso8601String(), 'status' => $s->status, 'course' => $s->course?->course_code, 'room' => $s->room?->name]), 'pagination' => ['current_page' => $sessions->currentPage(), 'last_page' => $sessions->lastPage(), 'total' => $sessions->total()]]);
+    }
+
+    public function attendance(Request $request)
+    {
+        $student = $this->student();
+        $records = $student->attendanceRecords()->with(['session.course'])->latest('marked_at')->paginate(min((int) $request->input('per_page', 20), 50));
+
+        return ApiResponse::ok(['items' => $records->getCollection()->map(fn ($r) => ['id' => $r->id, 'status' => $r->status, 'marked_at' => $r->marked_at?->toIso8601String(), 'session_id' => $r->class_session_id, 'course' => $r->session?->course?->course_code]), 'pagination' => ['current_page' => $records->currentPage(), 'last_page' => $records->lastPage(), 'total' => $records->total()]]);
+    }
+
+    public function attendanceSummary(Request $request, AttendanceReportService $reports)
+    {
+        $student = $this->student();
+
+        return ApiResponse::ok($reports->studentSummary($student, $request->input('from'), $request->input('to')));
+    }
+
+    public function security()
+    {
+        $student = $this->student();
+        $logs = $student->entryExitLogs()->with('gate')->latest('event_at')->paginate(20);
+
+        return ApiResponse::ok(['items' => $logs->getCollection()->map(fn ($l) => ['id' => $l->id, 'action' => $l->action, 'verification_method' => $l->verification_method, 'event_at' => $l->event_at?->toIso8601String(), 'gate' => $l->gate?->name]), 'pagination' => ['current_page' => $logs->currentPage(), 'last_page' => $logs->lastPage(), 'total' => $logs->total()]]);
+    }
+
+    public function notifications(Request $request)
+    {
+        $items = auth()->user()->notifications()->latest()->paginate(min((int) $request->input('per_page', 20), 50));
+
+        return ApiResponse::ok(['items' => $items->getCollection()->map(fn ($n) => ['id' => $n->id, 'type' => $n->type, 'data' => array_intersect_key(is_array($n->data) ? $n->data : [], array_flip(['title', 'body', 'message', 'event', 'session_id'])), 'read_at' => $n->read_at?->toIso8601String(), 'created_at' => $n->created_at?->toIso8601String()]), 'pagination' => ['current_page' => $items->currentPage(), 'last_page' => $items->lastPage(), 'total' => $items->total()]]);
+    }
 }

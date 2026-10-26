@@ -1,12 +1,12 @@
 <?php
 
+use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\RequestId;
+use App\Support\ApiResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use App\Http\Middleware\EnsureRole;
-use App\Http\Middleware\RequestId;
-use App\Support\ApiResponse;
 use Illuminate\Validation\ValidationException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -25,6 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
         $exceptions->render(function (ValidationException $exception, Request $request) {
-            if ($request->is('api/*')) return ApiResponse::error('The request validation failed.', $exception->errors(), 422);
+            if ($request->is('api/*')) {
+                return ApiResponse::error('The request validation failed.', $exception->errors(), 422);
+            }
         });
     })->create();

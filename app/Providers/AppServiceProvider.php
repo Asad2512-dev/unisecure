@@ -2,15 +2,15 @@
 
 namespace App\Providers;
 
+use App\Contracts\FaceVerificationInterface;
+use App\Contracts\FcmDeliveryInterface;
 use App\Repositories\Contracts\UserRepository;
 use App\Repositories\Eloquent\UserRepository as EloquentUserRepository;
-use Illuminate\Support\ServiceProvider;
-use App\Contracts\FaceVerificationInterface;
 use App\Services\UnavailableFaceVerificationProvider;
+use App\Services\UnavailableFcmProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
-use App\Contracts\FcmDeliveryInterface;
-use App\Services\UnavailableFcmProvider;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {

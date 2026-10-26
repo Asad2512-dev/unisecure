@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ $title ?? 'Workspace' }} · UniSecure</title><link rel="icon" href="{{ asset('logo.png') }}">@vite(['resources/css/app.css', 'resources/js/app.js'])</head>
+<body class="min-h-screen bg-brand-surface text-brand-navy">
+<header class="border-b border-slate-200/70 bg-white px-5 py-4"><div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4"><a href="/" class="flex items-center gap-3 text-xl font-bold tracking-tight"><img src="{{ asset('logo.png') }}" class="h-11 w-11 object-contain" alt="">UniSecure<span class="hidden rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-teal sm:inline">{{ auth()->user()->role?->display_name ?? 'Workspace' }}</span></a>
+<nav class="flex flex-wrap items-center gap-4 text-xs font-semibold" aria-label="Workspace">@if(auth()->user()->hasRole('guard'))<a href="{{ route('security.desk') }}" class="text-brand-teal">Security desk</a><a href="{{ route('security.visitors.index') }}" class="text-slate-500">Visitors</a>@else<a href="{{ route(auth()->user()->hasRole('teacher') ? 'teacher.home' : 'student.home') }}" class="text-brand-teal">My workspace</a>@endif<span class="hidden max-w-44 truncate text-slate-500 sm:inline">{{ auth()->user()->name }}</span><form action="{{ route('logout') }}" method="POST">@csrf<button class="rounded-xl border border-slate-200 px-4 py-2.5 text-rose-600 hover:bg-rose-50">Sign out</button></form></nav></div></header>
+<main class="mx-auto max-w-7xl p-5 sm:p-8">@yield('content')</main>
+<div id="global-loader" class="hidden fixed inset-0 z-[100] items-center justify-center bg-brand-navy/20 backdrop-blur-sm" role="status" aria-label="Loading"><div class="flex gap-2 rounded-full bg-white px-6 py-5 shadow-xl"><span class="loader-dot"></span><span class="loader-dot [animation-delay:150ms]"></span><span class="loader-dot [animation-delay:300ms]"></span></div></div>
+@include('layouts.confirmation')
+@include('layouts.snackbars')
+</body></html>

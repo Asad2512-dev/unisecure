@@ -15,11 +15,19 @@ class ApiEndpoints {
   static const teacherProfile = '/teacher/profile',
       teacherCourses = '/teacher/courses',
       teacherSections = '/teacher/sections',
-      teacherSessions = '/teacher/sessions';
+      teacherSessions = '/teacher/sessions',
+      teacherSessionStudents = '/teacher/sessions/{id}/students',
+      teacherSessionAttendance = '/teacher/sessions/{id}/attendance',
+      teacherMarkAttendance = '/teacher/sessions/{id}/attendance',
+      teacherFinalize = '/teacher/sessions/{id}/finalize';
   static const guardProfile = '/guard/profile',
       guardGate = '/guard/gate',
       guardSearch = '/guard/students/search',
       guardManual = '/guard/security/manual',
       guardFace = '/guard/security/face',
+      guardTransactions = '/guard/security/transactions',
       guardVisitors = '/guard/visitors';
+
+  static String teacherSession(String template, dynamic id) =>
+      template.replaceFirst('{id}', '$id');
 }

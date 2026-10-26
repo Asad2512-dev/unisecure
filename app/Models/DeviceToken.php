@@ -1,4 +1,19 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
-class DeviceToken extends Model { protected $fillable=['user_id','token','platform','device_name','last_used_at','status']; protected $casts=['last_used_at'=>'datetime']; protected $hidden=['token']; public function user(){return $this->belongsTo(User::class);} }
+
+class DeviceToken extends Model
+{
+    protected $fillable = ['user_id', 'token', 'platform', 'device_name', 'last_used_at', 'status'];
+
+    protected $casts = ['last_used_at' => 'datetime'];
+
+    protected $hidden = ['token'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}

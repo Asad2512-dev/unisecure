@@ -1,126 +1,200 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_texts.dart';
+import '../../../app/core/constants/app_colors.dart';
+import '../../../app/core/constants/app_dimensions.dart';
+import '../../../app/core/constants/app_icons.dart';
+import '../../../app/core/constants/app_radius.dart';
+import '../../../app/core/constants/app_spacing.dart';
+import '../../../app/core/constants/app_strings.dart';
+import '../../../app/core/constants/app_typography.dart';
+import '../../../app/core/widgets/app_buttons.dart';
+import '../../../app/core/widgets/app_layout.dart';
+import '../../../app/core/widgets/app_text_fields.dart';
 import '../../../core/auth/auth_controller.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
+
   @override
-  State<LoginView> createState() => _LoginState();
+  State<LoginView> createState() => _LoginViewState();
 }
 
-class _LoginState extends State<LoginView> {
-  final email = TextEditingController();
-  final password = TextEditingController();
-  final form = GlobalKey<FormState>();
-  bool obscure = true;
-  AuthController get auth => Get.find<AuthController>();
+class _LoginViewState extends State<LoginView> {
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  AuthController get _auth => Get.find<AuthController>();
+
   @override
   void dispose() {
-    email.dispose();
-    password.dispose();
+    _email.dispose();
+    _password.dispose();
     super.dispose();
   }
 
+  void _handleSignIn() {
+    if (_formKey.currentState?.validate() ?? false) {
+      _auth.login(_email.text.trim(), _password.text);
+    }
+  }
+
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: SafeArea(
-      child: Center(
+  Widget build(BuildContext context) {
+    return AppScaffold(
+      body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.screen,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 430),
+            constraints: const BoxConstraints(maxWidth: 420),
             child: Form(
-              key: form,
+              key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(
-                    Icons.shield_outlined,
-                    size: 58,
-                    color: AppColors.blue,
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    AppTexts.login,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.navy,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Secure access for your university role.',
-                    style: TextStyle(color: AppColors.muted),
-                  ),
-                  const SizedBox(height: 28),
-                  TextFormField(
-                    controller: email,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                    validator: (v) => v == null || !v.contains('@')
-                        ? 'Enter a valid email'
-                        : null,
-                  ),
-                  const SizedBox(height: 14),
-                  TextFormField(
-                    controller: password,
-                    obscureText: obscure,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      suffixIcon: IconButton(
-                        onPressed: () => setState(() => obscure = !obscure),
-                        icon: Icon(
-                          obscure
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
+                  AppSpacing.vGap16,
+                  Center(
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(AppRadius.card),
+                        border: Border.all(
+                          color: AppColors.border,
+                          width: AppDimensions.strokeWidth,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(14),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.contain,
                       ),
                     ),
-                    validator: (v) => v == null || v.length < 8
-                        ? 'Enter your password'
-                        : null,
                   ),
-                  const SizedBox(height: 14),
+                  AppSpacing.vGap24,
+                  Text(
+                    AppStrings.loginTitle,
+                    textAlign: TextAlign.center,
+                    style: AppTypography.headlineLarge.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.mainText,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  AppSpacing.vGap8,
+                  Text(
+                    AppStrings.loginSubtitle,
+                    textAlign: TextAlign.center,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.secondaryText,
+                    ),
+                  ),
+                  AppSpacing.vGap32,
+                  AppTextField(
+                    controller: _email,
+                    label: AppStrings.email,
+                    hint: 'student@gmail.com',
+                    keyboardType: TextInputType.emailAddress,
+                    prefixIcon: const Icon(
+                      Icons.alternate_email_rounded,
+                      size: AppDimensions.iconSm,
+                      color: AppColors.secondaryText,
+                    ),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!v.contains('@') || !v.contains('.')) {
+                        return 'Enter a valid university email address';
+                      }
+                      return null;
+                    },
+                  ),
+                  AppSpacing.vGap16,
+                  AppPasswordField(
+                    controller: _password,
+                    label: AppStrings.password,
+                    hint: '12345678',
+                    validator: (v) {
+                      if (v == null || v.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      if (v.length < 6) {
+                        return 'Password must be at least 6 characters';
+                      }
+                      return null;
+                    },
+                    onFieldSubmitted: (_) => _handleSignIn(),
+                  ),
+                  AppSpacing.vGap16,
                   Obx(
-                    () => auth.error.value.isEmpty
+                    () => _auth.error.value.isEmpty
                         ? const SizedBox.shrink()
-                        : Text(
-                            auth.error.value,
-                            style: const TextStyle(color: AppColors.danger),
+                        : Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.errorSoft,
+                              borderRadius: BorderRadius.circular(AppRadius.md),
+                              border: Border.all(
+                                color: AppColors.error.withValues(alpha: 0.2),
+                                width: AppDimensions.strokeWidth,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  AppIcons.error,
+                                  size: AppDimensions.iconSm,
+                                  color: AppColors.error,
+                                ),
+                                AppSpacing.hGap8,
+                                Expanded(
+                                  child: Text(
+                                    _auth.error.value,
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: AppColors.error,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                   ),
-                  const SizedBox(height: 18),
                   Obx(
-                    () => FilledButton(
-                      onPressed: auth.loading.value
-                          ? null
-                          : () {
-                              if (form.currentState!.validate()) {
-                                auth.login(email.text.trim(), password.text);
-                              }
-                            },
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: auth.loading.value
-                          ? const SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text('Sign in'),
+                    () => AppButton.primary(
+                      text: AppStrings.signIn,
+                      isLoading: _auth.loading.value,
+                      onPressed: _handleSignIn,
                     ),
                   ),
+                  AppSpacing.vGap32,
+                  Text(
+                    'NUML University • Campus Attendance & Security System',
+                    textAlign: TextAlign.center,
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.secondaryText,
+                    ),
+                  ),
+                  AppSpacing.vGap16,
                 ],
               ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
